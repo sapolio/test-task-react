@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -9,6 +8,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Data from '../dummy.json';
+import Info from './info';
 
 const styles = theme => ({
   root: {
@@ -27,7 +27,8 @@ class DataTable extends React.Component {
   state = {
     sortBy: 'id',
     direction: 'asc',
-    data: Data
+    data: Data,
+    rowSelected: null
   }
 
   handleSortClick = (by) => {
@@ -44,15 +45,28 @@ class DataTable extends React.Component {
       data
     });
   }
+  selectRow = (index) => {
+    this.setState({rowSelected: index})
+  }
+  isRowSelected = (index) => index == this.state.rowSelected;
 
   render() {
-    const { sortBy, direction, data } = this.state;
+    const { sortBy, direction, data, rowSelected: row } = this.state;
 
-    return <Paper className={this.props.classes.root}>
+    return (
+      <React.Fragment>
+      {row != null && 
+          <Info 
+            userName={data[row].firstName + ' ' + data[row].lastName}
+            description={data[row].description}
+            address={data[row].address}
+          />
+      }
+      <Paper className={this.props.classes.root}>
         <Table className={this.props.classes.table}>
           <TableHead>
             <TableRow>
-              <TableCell numeric>
+              <TableCell>
                 <TableSortLabel
                   active={sortBy == 'id'}
                   direction={direction}
@@ -95,18 +109,27 @@ class DataTable extends React.Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map(row => {
-              return <TableRow key={row.id}>
-                  <TableCell numeric>{row.id}</TableCell>
+            {data.map((row, index )=> {
+              const isRowSelected = this.isRowSelected(index)
+              return (
+                <TableRow
+                  onClick={() => this.selectRow(index)}
+                  key={row.id}
+                  hover
+                  selected={isRowSelected}
+                >
+                  <TableCell>{row.id}</TableCell>
                   <TableCell>{row.firstName}</TableCell>
                   <TableCell>{row.lastName}</TableCell>
                   <TableCell>{row.email}</TableCell>
                   <TableCell>{row.phone}</TableCell>
-                </TableRow>;
+                </TableRow>);
             })}
           </TableBody>
         </Table>
-      </Paper>;
+      </Paper>
+      </React.Fragment>
+      );
   };
 }
 
